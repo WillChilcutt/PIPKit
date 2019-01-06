@@ -14,15 +14,6 @@ final class PIPKitEventDispatcher {
         static let hangAroundPadding: CGFloat = 15.0
     }
     
-    private enum PIPPosition {
-        case topLeft
-        case middleLeft
-        case bottomLeft
-        case topRight
-        case middleRight
-        case bottomRight
-    }
-    
     private weak var rootViewController: PIPKitViewController?
     private lazy var transitionGesture: UIPanGestureRecognizer = {
         UIPanGestureRecognizer(target: self, action: #selector(onTransition(_:)))
@@ -165,14 +156,56 @@ final class PIPKitEventDispatcher {
         
         let vh = (window.frame.height - (safeAreaInsets.top + safeAreaInsets.bottom)) / 3.0
         
-        switch center.y {
-        case let y where y < safeAreaInsets.top + vh:
-            pipPosition = center.x < window.frame.width / 2.0 ? .topLeft : .topRight
-        case let y where y > window.frame.height - safeAreaInsets.bottom - vh:
-            pipPosition = center.x < window.frame.width / 2.0 ? .bottomLeft : .bottomRight
-        default:
-            pipPosition = center.x < window.frame.width / 2.0 ? .middleLeft : .middleRight
+        let preposedPosition : PIPPosition
+        
+        switch center.y
+        {
+            case let y where y < safeAreaInsets.top + vh:
+                preposedPosition = center.x < window.frame.width / 2.0 ? .topLeft : .topRight
+            case let y where y > window.frame.height - safeAreaInsets.bottom - vh:
+                preposedPosition = center.x < window.frame.width / 2.0 ? .bottomLeft : .bottomRight
+            default:
+                preposedPosition = center.x < window.frame.width / 2.0 ? .middleLeft : .middleRight
         }
+        
+        if PIPKit.allowedPIPPositions.contains(preposedPosition) == true
+        {
+            pipPosition = preposedPosition
+        }
+        else if pipPosition.isHorizontalRelativeTo(otherPosition: preposedPosition) == true
+        {
+            //Do nothing! If they are trying to move horizontally and cannot, then just return to the last place
+        }
+        else
+        {
+            var preposedAlternativePosition : PIPPosition?
+            
+            //If We're trying to move to the middle, but middle is not allow, attempt to pass right through to the vertical opposite
+            if  preposedPosition.isMiddlePosition() == true
+            {
+                preposedAlternativePosition = pipPosition.verticalOpposite()
+
+                //If we're not in the same vertical column, flip to the horizontal opposite to try
+                if preposedPosition.isVerticalRelativeTo(otherPosition: pipPosition) == false
+                {
+                    preposedAlternativePosition = preposedAlternativePosition?.horizontalOpposite()
+                }
+            }
+            //Not the middle? Try the horizontal opposite!
+            else
+            {
+                preposedAlternativePosition = preposedPosition.horizontalOpposite()
+            }
+            
+            if let preposedAlternativePosition = preposedAlternativePosition
+            {
+                if PIPKit.allowedPIPPositions.contains(preposedAlternativePosition) == true
+                {
+                    pipPosition = preposedAlternativePosition
+                }
+            }
+        }
+        
     }
     
     // MARK: - Action

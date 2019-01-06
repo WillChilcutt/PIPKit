@@ -13,6 +13,78 @@ enum _PIPState {
     case exit
 }
 
+public enum PIPPosition {
+    case topLeft
+    case middleLeft
+    case bottomLeft
+    case topRight
+    case middleRight
+    case bottomRight
+    
+    func isHorizontalRelativeTo(otherPosition : PIPPosition) -> Bool
+    {
+        return self.horizontalOpposite() == otherPosition
+    }
+    
+    func isVerticalRelativeTo(otherPosition : PIPPosition) -> Bool
+    {
+        let leftSide : [PIPPosition] = [.topLeft,.middleLeft,.bottomLeft]
+        let rightSide : [PIPPosition] = [.topRight,.middleRight,.bottomRight]
+        
+        if leftSide.contains(self) == true && leftSide.contains(otherPosition) == true
+        {
+            return true
+        }
+        else if rightSide.contains(self) == true && rightSide.contains(otherPosition) == true
+        {
+            return true
+        }
+        
+        return false
+    }
+    
+    func verticalOpposite() -> PIPPosition
+    {
+        switch self
+        {
+            case .topLeft:
+                return .bottomLeft
+            case .topRight:
+                return .bottomRight
+            case .bottomLeft:
+                return .topLeft
+            case .bottomRight:
+                return .topRight
+            default:
+                return self
+        }
+    }
+    
+    func horizontalOpposite() -> PIPPosition
+    {
+        switch self
+        {
+            case .topLeft:
+                return .topRight
+            case .topRight:
+                return .topLeft
+            case .middleLeft:
+                return .middleRight
+            case .middleRight:
+                return .middleLeft
+            case .bottomLeft:
+                return .bottomRight
+            case .bottomRight:
+                return .bottomLeft
+        }
+    }
+    
+    func isMiddlePosition() -> Bool
+    {
+        return [PIPPosition.middleLeft,PIPPosition.middleRight].contains(self)
+    }
+}
+
 public typealias PIPKitViewController = (UIViewController & PIPUsable)
 
 public final class PIPKit {
@@ -20,6 +92,7 @@ public final class PIPKit {
     static public var isActive: Bool { return rootViewController != nil }
     static public var isPIP: Bool { return state == .pip }
     static public var visibleViewController: PIPKitViewController? { return rootViewController }
+    static public var allowedPIPPositions : [PIPPosition] = [.topLeft, .topRight, .middleLeft, .middleRight, .bottomLeft, .bottomRight]
     
     static internal var state: _PIPState = .none
     static private var rootViewController: PIPKitViewController?
