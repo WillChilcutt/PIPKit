@@ -94,6 +94,7 @@ public final class PIPKit {
     static public var visibleViewController: PIPKitViewController? { return rootViewController }
     static public var allowedPIPPositions : [PIPPosition] = [.topLeft, .topRight, .middleLeft, .middleRight, .bottomLeft, .bottomRight]
     
+    static public var defaultPIPPosition : PIPPosition = .bottomRight
     static internal var state: _PIPState = .none
     static private var rootViewController: PIPKitViewController?
     

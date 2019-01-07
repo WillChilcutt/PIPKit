@@ -20,7 +20,7 @@ final class PIPKitEventDispatcher {
     }()
     
     private var startOffset: CGPoint = .zero
-    private var pipPosition: PIPPosition = .bottomRight
+    private var pipPosition: PIPPosition = PIPKit.defaultPIPPosition
     private var deviceNotificationObserver: NSObjectProtocol?
     
     deinit {
